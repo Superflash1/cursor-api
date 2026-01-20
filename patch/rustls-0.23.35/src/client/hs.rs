@@ -420,7 +420,7 @@ fn emit_client_hello_for_retry(
         _ => {}
     }
 
-    // if config.fingerprint {
+    // if let Some(ref protocols) = chp_payload.extensions.protocols && protocols.len() == 1 && &protocols[0] == b"h2" {
     chp_payload.cipher_suites = vec![
         // 0x1301
         CipherSuite::TLS13_AES_128_GCM_SHA256,
@@ -500,8 +500,7 @@ fn emit_client_hello_for_retry(
         force_set(
             &mut chp_payload.extensions.padding,
             if chp_payload.extensions.preshared_key_offer.is_some() {
-                chp_payload.extensions.protocols = None;
-                Payload::Borrowed(&[0; 37])
+                Payload::Borrowed(&[0; 75])
             } else {
                 Payload::Borrowed(&[0; 251])
             },
