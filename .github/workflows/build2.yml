@@ -1,0 +1,35 @@
+name: Build Image
+
+on:
+  push:
+    branches: [ "main", "master" ] # 代码一更新，就开始做菜
+  workflow_dispatch: # 允许你手动点按钮开始做菜
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v3
+
+      - name: 设置 QEMU (为了支持不同架构的服务器)
+        uses: docker/setup-qemu-action@v2
+
+      - name: 设置构建环境
+        uses: docker/setup-buildx-action@v2
+
+      - name: 登录 Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: 开始构建并推送到 Docker Hub
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          # 这里会自动构建 AMD64 和 ARM64 两种版本，不管你服务器是啥都能跑
+          platforms: linux/amd64,linux/arm64
+          # 自动用你的用户名和仓库名
+          tags: ${{ secrets.DOCKER_USERNAME }}/cursor-api:latest
